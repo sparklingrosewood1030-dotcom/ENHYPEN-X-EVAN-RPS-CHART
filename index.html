@@ -426,33 +426,31 @@ th, td {
       </div>
 
       <h1>EVAN × ENHYPEN</h1>
-      <p class="subtitle">Directional Ship Preference Chart</p>
+      <p class="subtitle">Ship Preference Chart</p>
 
       <p class="instructions">
         Select your preferences for each pairing by clicking its cell.
         <br>
-        <strong>ROWS = BOTTOM</strong>
-        &nbsp; / &nbsp;
-        <strong>COLUMNS = TOP</strong>
-        <br>
-        Click to cycle forward through the categories. Right-click to cycle backwards.
+       <strong>ROWS = TOP</strong>
+&nbsp; / &nbsp;
+<strong>COLUMNS = BOTTOM</strong>
+<br>
+Click a cell to choose your preference.
       </p>
     </header>
 
-    <div class="table-wrap">
-      <table id="ship-table" aria-label="EVAN and ENHYPEN directional ship preference chart">
-        <thead id="table-head"></thead>
-        <tbody id="table-body"></tbody>
-      </table>
+      </section>
+
+  <div id="category-picker" class="picker-overlay" hidden>
+    <div class="picker-box">
+      <button type="button" id="picker-close" class="picker-close">×</button>
+      <p class="picker-heading">SELECT YOUR PREFERENCE</p>
+      <p class="picker-subheading" id="picker-pairing"></p>
+      <div id="picker-options" class="picker-options"></div>
     </div>
+  </div>
 
-    <section class="legend" id="legend"></section>
-
-    <p class="legend-footer">
-      EVAN × ENHYPEN · PERSONAL SHIP PREFERENCES
-    </p>
-
-  </section>
+  <nav class="toolbar">
 
   <nav class="toolbar" aria-label="Chart controls">
     <button id="undo-btn" type="button">↶ UNDO</button>
