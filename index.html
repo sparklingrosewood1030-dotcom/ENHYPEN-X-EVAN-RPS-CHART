@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#8f0808">
+  <meta name="description" content="A customizable ENHYPEN × EVAN directional pairing preference chart.">
+  <title>ENHYPEN × EVAN — Pairing Preference Chart</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand-lockup">
+      <div class="wordmark">ENHYPEN <span>×</span> EVAN</div>
+      <p>PAIRING PREFERENCE CHART</p>
+    </div>
+    <p class="intro">Make your own chart. Your edits are saved in this browser and are not shared with other visitors.</p>
+  </header>
+
+  <main>
+    <section class="toolbar" aria-label="Chart controls">
+      <div class="control-group">
+        <button id="undoBtn" class="secondary" type="button" disabled>↶ Undo</button>
+        <button id="redoBtn" class="secondary" type="button" disabled>↷ Redo</button>
+        <button id="resetBtn" class="secondary" type="button">Reset chart</button>
+      </div>
+      <div class="control-group">
+        <button id="exportPngBtn" type="button">Download PNG</button>
+        <button id="exportJsonBtn" class="secondary" type="button">Export backup</button>
+        <label class="button secondary file-button">Import backup<input id="importJsonInput" type="file" accept=".json,application/json"></label>
+      </div>
+    </section>
+
+    <section class="settings-layout">
+      <div class="chart-panel">
+        <div class="chart-heading">
+          <div>
+            <h1>Your preference chart</h1>
+            <p>Choose a cell, then select how you feel about that directional pairing.</p>
+          </div>
+          <span id="saveStatus" class="save-status" role="status">Saved locally</span>
+        </div>
+        <div class="table-scroll">
+          <table id="preferenceTable" aria-label="Seven by seven directional pairing preference chart">
+            <thead><tr id="columnHeaders"><th class="corner"></th></tr></thead>
+            <tbody id="chartBody"></tbody>
+          </table>
+        </div>
+        <div class="legend-wrap">
+          <h2>Preference key</h2>
+          <div id="legend" class="legend"></div>
+        </div>
+      </div>
+
+      <aside class="side-panel">
+        <section class="editor-card">
+          <h2>Selected pairing</h2>
+          <div id="selectedPair" class="selected-pair">Select a cell in the chart</div>
+          <label for="preferenceSelect">Preference</label>
+          <select id="preferenceSelect" disabled></select>
+          <p class="hint">Each direction is independent. Changing Jake × Jay will not change Jay × Jake.</p>
+        </section>
+
+        <section class="editor-card">
+          <h2>Customize colors</h2>
+          <p class="hint">Change the color assigned to each preference. Names and definitions stay consistent.</p>
+          <div id="colorSettings" class="color-settings"></div>
+        </section>
+
+        <section class="editor-card">
+          <h2>Member photos</h2>
+          <p class="hint">Optional. Photos stay in this browser and can be included in your exported backup.</p>
+          <div id="photoSettings" class="photo-settings"></div>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <footer>
+    <p>Fan-made, unofficial project. Not affiliated with or endorsed by ENHYPEN, EVAN, or their representatives.</p>
+    <p>Pairing names are a work in progress. Please verify Korean fandom spellings and romanizations before publishing.</p>
+  </footer>
+
+  <dialog id="cellDialog">
+    <form method="dialog" class="dialog-content">
+      <button class="dialog-close" aria-label="Close">×</button>
+      <h2 id="dialogPairTitle">Pairing</h2>
+      <p id="dialogPairSub" class="hint"></p>
+      <label for="dialogPreference">Choose a preference</label>
+      <select id="dialogPreference"></select>
+      <button id="applyPreferenceBtn" type="button">Apply</button>
+    </form>
+  </dialog>
+  <script src="members.js"></script>
+  <script src="settings.js"></script>
+  <script src="storage.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
