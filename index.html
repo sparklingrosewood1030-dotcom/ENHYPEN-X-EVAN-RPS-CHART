@@ -13,21 +13,173 @@
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
-:root {
-  --bg: #09090b;
-  --surface: #111114;
-  --surface-2: #19191e;
-  --text: #f4eff0;
-  --muted: #a9a0a3;
-  --line: #343036;
-  --accent: #8f102b;
-  --accent-light: #c02a49;
+/* CATEGORY PICKER */
+
+.picker-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(0,0,0,.78);
+  backdrop-filter: blur(5px);
 }
 
-* {
-  box-sizing: border-box;
+.picker-overlay[hidden] {
+  display: none;
 }
 
+.picker-box {
+  position: relative;
+  width: min(100%, 390px);
+  padding: 28px 23px;
+  background: #171216;
+  border: 1px solid #713044;
+  border-radius: 16px;
+  box-shadow: 0 15px 60px #000a;
+}
+
+.picker-close {
+  position: absolute;
+  top: 8px;
+  right: 13px;
+  border: 0;
+  background: transparent;
+  color: #c9aeb6;
+  font-size: 26px;
+  cursor: pointer;
+}
+
+.picker-heading {
+  margin: 0;
+  color: #f4e9ec;
+  text-align: center;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 21px;
+  letter-spacing: 2px;
+}
+
+.picker-subheading {
+  margin: 7px 0 20px;
+  color: #bbaab0;
+  text-align: center;
+  font-size: 11px;
+}
+
+.picker-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.picker-option {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  min-height: 58px;
+  padding: 9px 12px;
+  border: 1px solid #403039;
+  border-radius: 30px;
+  background: #211920;
+  color: #f6edf0;
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: .18s ease;
+}
+
+.picker-option:hover {
+  border-color: #c15a75;
+  background: #38202b;
+  transform: translateY(-1px);
+}
+
+.picker-dot {
+  flex: 0 0 27px;
+  width: 27px;
+  height: 27px;
+  border: 2px solid #ffffff55;
+  border-radius: 50%;
+}
+
+.picker-label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.picker-label strong {
+  font-size: 12px;
+}
+
+.picker-label span {
+  color: #d0bdc4;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* LEGEND: CIRCULAR COLOUR SWATCHES AND LARGER LABELS */
+
+.legend-item {
+  background: #171418;
+  border: 1px solid #49313a;
+  border-radius: 12px;
+  padding: 13px 7px;
+}
+
+.legend-color {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 32px;
+  height: 32px;
+  border: 3px solid #ffffff55;
+  border-radius: 50%;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.legend-color::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.legend-color::-webkit-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.legend-color::-moz-color-swatch {
+  border: none;
+  border-radius: 50%;
+}
+
+.legend-name {
+  font-size: 13px;
+}
+
+.legend-ko {
+  margin-top: 3px;
+  color: #e3d4da;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.legend-hint {
+  font-size: 9px;
+}
+
+/* DIRECTION LABELS */
+
+.axis-corner {
+  line-height: 1.8;
+}
+
+@media (max-width: 480px) {
+  .picker-options {
+    grid-template-columns: 1fr;
+  }
+}
 body {
   margin: 0;
   padding: 34px 18px 55px;
@@ -662,7 +814,7 @@ function renderChart() {
 
   const corner = document.createElement("th");
   corner.className = "axis-corner";
-  corner.innerHTML = "<span>BOTTOM ↓<br>TOP →</span>";
+ corner.innerHTML = "<span>TOP ↓<br>BOTTOM →</span>";
   headerRow.appendChild(corner);
 
   members.forEach(member => {
@@ -700,15 +852,15 @@ function renderChart() {
       button.style.color = readableText(palette[categoryIndex]);
 
       button.setAttribute(
-        "aria-label",
-        `${bottomMember.name} bottom, ${topMember.name} top: ${category.en}. ${korean}, ${english}`
-      );
+  "aria-label",
+  `${bottomMember.name} top, ${topMember.name} bottom: ${category.en}. ${korean}, ${english}`
+);
 
-      button.title =
-        `${bottomMember.name} (bottom) × ${topMember.name} (top)\n` +
-        `${korean} — ${english}\n` +
-        `Current preference: ${category.en} / ${category.ko}\n` +
-        `Click to change`;
+button.title =
+  `${bottomMember.name} (top) × ${topMember.name} (bottom)\n` +
+  `${korean} — ${english}\n` +
+  `Current preference: ${category.en} / ${category.ko}\n` +
+  `Click to choose a preference`;
 
       button.innerHTML = `
         <span class="ship-ko">${korean}</span>
@@ -845,15 +997,9 @@ document.getElementById("reset-btn").addEventListener("click", () => {
    PNG DOWNLOAD
 ===================================================== */
 
-document.getElementById("png-btn").addEventListener("click", async () => {
-  const button = document.getElementById("png-btn");
-  const originalText = button.textContent;
-
-  if (typeof html2canvas === "undefined") {
-    alert("The PNG library did not load. Please refresh the page and try again.");
-    return;
-  }
-
+document.getElementById("png-btn").button.addEventListener("click", () => {
+  openCategoryPicker(rowIndex, colIndex);
+});
   button.disabled = true;
   button.textContent = "CREATING PNG...";
 
