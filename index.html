@@ -1,1041 +1,902 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#8f0808">
-  <meta name="description" content="A customizable ENHYPEN × EVAN directional pairing preference chart.">
-  <title>ENHYPEN × EVAN — Pairing Preference Chart</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
-  <header class="site-header">
-    <div class="brand-lockup">
-      <div class="wordmark">ENHYPEN <span>×</span> EVAN</div>
-      <p>PAIRING PREFERENCE CHART</p>
-    </div>
-    <p class="intro">Make your own chart. Your edits are saved in this browser and are not shared with other visitors.</p>
-  </header>
 
-  <main>
-    <section class="toolbar" aria-label="Chart controls">
-      <div class="control-group">
-        <button id="undoBtn" class="secondary" type="button" disabled>↶ Undo</button>
-        <button id="redoBtn" class="secondary" type="button" disabled>↷ Redo</button>
-        <button id="resetBtn" class="secondary" type="button">Reset chart</button>
-      </div>
-      <div class="control-group">
-        <button id="exportPngBtn" type="button">Download PNG</button>
-        <button id="exportJsonBtn" class="secondary" type="button">Export backup</button>
-        <label class="button secondary file-button">Import backup<input id="importJsonInput" type="file" accept=".json,application/json"></label>
-      </div>
-    </section>
-
-    <section class="settings-layout">
-      <div class="chart-panel">
-        <div class="chart-heading">
-          <div>
-            <h1>Your preference chart</h1>
-            <p>Choose a cell, then select how you feel about that directional pairing.</p>
-          </div>
-          <span id="saveStatus" class="save-status" role="status">Saved locally</span>
-        </div>
-        <div class="table-scroll">
-          <table id="preferenceTable" aria-label="Seven by seven directional pairing preference chart">
-            <thead><tr id="columnHeaders"><th class="corner"></th></tr></thead>
-            <tbody id="chartBody"></tbody>
-          </table>
-        </div>
-        <div class="legend-wrap">
-          <h2>Preference key</h2>
-          <div id="legend" class="legend"></div>
-        </div>
-      </div>
-
-      <aside class="side-panel">
-        <section class="editor-card">
-          <h2>Selected pairing</h2>
-          <div id="selectedPair" class="selected-pair">Select a cell in the chart</div>
-          <label for="preferenceSelect">Preference</label>
-          <select id="preferenceSelect" disabled></select>
-          <p class="hint">Each direction is independent. Changing Jake × Jay will not change Jay × Jake.</p>
-        </section>
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EVAN × ENHYPEN — Ship Chart</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<title>EVAN × ENHYPEN — Ship Preference Chart</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Noto+Sans+KR:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 
 <style>
 :root {
-  --bg: #111113;
-  --panel: #202024;
-  --panel-2: #29292d;
-  --red: #a30f19;
-  --red-light: #c51d2a;
-  --text: #ffffff;
-  --muted: #aaaab2;
-  --border: #414147;
-  --otp: #d7263d;
-  --love: #b9a0e5;
-  --like: #f2a23a;
-  --curious: #80c9e8;
-  --neutral: #ffffff;
-  --dislike: #859c61;
-  --notp: #171717;
+  --bg: #09090b;
+  --surface: #111114;
+  --surface-2: #19191e;
+  --text: #f4eff0;
+  --muted: #a9a0a3;
+  --line: #343036;
+  --accent: #8f102b;
+  --accent-light: #c02a49;
 }
 
-* { box-sizing: border-box; }
+* {
+  box-sizing: border-box;
+}
 
 body {
   margin: 0;
-  background: var(--bg);
+  padding: 34px 18px 55px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #281018 0%, transparent 48%),
+    var(--bg);
   color: var(--text);
-  font-family: Arial, Helvetica, sans-serif;
-  min-height: 100vh;
-}
-
-button, input, select {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
+  font-family: "Noto Sans KR", sans-serif;
 }
 
 .page {
-  width: min(1500px, 96%);
-  margin: auto;
-  padding: 30px 0 55px;
-}
-
-header {
-  text-align: center;
-  margin-bottom: 28px;
-}
-
-.brand-line {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 15px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.brand-line img {
-  width: 100px;
-  max-height: 48px;
-  object-fit: contain;
-}
-
-.brand-name {
-  color: white;
-  font-size: clamp(23px, 4vw, 38px);
-  font-weight: 800;
-  letter-spacing: 2px;
-}
-
-.brand-name span {
-  color: #d52a36;
-}
-
-.subtitle {
-  color: var(--muted);
-  font-size: 12px;
-  letter-spacing: 3px;
-  text-transform: uppercase;
-  margin-top: 8px;
-}
-
-h1 {
-  font-size: clamp(25px, 4vw, 38px);
-  margin: 12px 0 8px;
-  letter-spacing: 1px;
-}
-
-.intro {
-  color: var(--muted);
-  font-size: 14px;
-  line-height: 1.6;
-  max-width: 650px;
-  margin: auto;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 9px;
-  flex-wrap: wrap;
-  margin: 24px 0;
-}
-
-.action {
-  border: 1px solid var(--border);
-  background: var(--panel-2);
-  color: white;
-  padding: 10px 16px;
-  border-radius: 6px;
-  font-size: 13px;
-  transition: .2s;
-}
-
-.action:hover {
-  border-color: var(--red-light);
-  background: #38383e;
-}
-
-.action.primary {
-  background: var(--red);
-  border-color: var(--red);
-}
-
-.action.primary:hover {
-  background: var(--red-light);
-}
-
-.action:disabled {
-  opacity: .35;
-  cursor: not-allowed;
-}
-
-.status {
-  text-align: center;
-  color: var(--muted);
-  font-size: 11px;
-  min-height: 16px;
-  margin: -13px 0 17px;
+  width: min(100%, 1450px);
+  margin: 0 auto;
 }
 
 .chart-shell {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: clamp(10px, 2vw, 24px);
-  box-shadow: 0 12px 40px rgba(0,0,0,.25);
+  padding: 32px;
+  background: rgba(13, 12, 15, 0.96);
+  border: 1px solid #38242b;
+  border-radius: 15px;
+  box-shadow: 0 18px 65px rgba(0,0,0,.45);
 }
 
-.chart-heading {
+.branding {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 38px;
+  margin-bottom: 12px;
+}
+
+.branding img {
+  display: block;
+  width: 145px;
+  height: 78px;
+  object-fit: contain;
+}
+
+.branding img.evan-logo {
+  width: 130px;
+}
+
+.branding img.enhypen-logo {
+  width: 155px;
+}
+
+.brand-divider {
+  height: 42px;
+  width: 1px;
+  background: #5b303b;
+}
+
+h1 {
+  margin: 8px 0 5px;
+  color: #f4e9ec;
   text-align: center;
-  margin: 3px 0 18px;
+  font-family: "Cormorant Garamond", serif;
+  font-size: clamp(34px, 5vw, 53px);
+  font-weight: 600;
+  letter-spacing: 5px;
 }
 
-.chart-heading h2 {
-  font-size: 19px;
-  margin: 0 0 6px;
-  letter-spacing: 2px;
+.subtitle {
+  margin: 0 0 28px;
+  color: #b9aeb2;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
 }
 
-.chart-heading p {
+.instructions {
+  margin: 0 auto 25px;
+  max-width: 750px;
+  color: #c5b9bd;
+  text-align: center;
   font-size: 12px;
-  color: var(--muted);
-  margin: 0;
+  line-height: 1.8;
 }
 
-.table-scroll {
+.instructions strong {
+  color: #f0d9df;
+  letter-spacing: 1px;
+}
+
+.table-wrap {
   width: 100%;
   overflow-x: auto;
   padding-bottom: 8px;
 }
 
 table {
-  border-collapse: separate;
-  border-spacing: 3px;
   width: 100%;
-  min-width: 850px;
+  min-width: 820px;
   table-layout: fixed;
+  border-collapse: separate;
+  border-spacing: 4px;
 }
 
 th, td {
-  text-align: center;
   padding: 0;
-}
-
-th {
-  background: var(--red);
-  color: white;
-  font-size: 12px;
-  font-weight: 700;
-  padding: 12px 4px;
-  border-radius: 4px;
-  line-height: 1.4;
-}
-
-th.corner {
-  background: transparent;
-  border: 1px solid var(--border);
-  color: var(--muted);
-  font-size: 10px;
-}
-
-th.row-name {
-  width: 105px;
-  min-width: 105px;
-  text-align: left;
-  padding-left: 10px;
-}
-
-.member-korean {
-  display: block;
-  font-size: 10px;
-  font-weight: 400;
-  opacity: .8;
-  margin-top: 3px;
-}
-
-td {
-  height: 76px;
-  background: #29292d;
-  border: 1px solid #48484e;
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.cell-select {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  height: 100%;
-  min-height: 76px;
-  border: 0;
-  border-radius: 3px;
-  padding: 5px 2px;
-  cursor: pointer;
   text-align: center;
-  font-weight: 700;
-  font-size: 13px;
-  outline-offset: -3px;
-  transition: filter .15s;
 }
 
-.cell-select:hover {
+.axis-corner {
+  width: 115px;
+  color: #c8aab2;
+  font-size: 10px;
+  letter-spacing: 2px;
+  vertical-align: bottom;
+}
+
+.axis-corner span {
+  display: block;
+  padding-bottom: 10px;
+}
+
+.member-head {
+  height: 78px;
+  color: #f0e7e9;
+  background: #21151a;
+  border: 1px solid #48232e;
+  border-radius: 5px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.member-head .member-ko {
+  display: block;
+  color: #c9aeb6;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.row-head {
+  width: 115px;
+  padding: 8px;
+  color: #f0e7e9;
+  background: #21151a;
+  border: 1px solid #48232e;
+  border-radius: 5px;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.row-head .member-ko {
+  display: block;
+  color: #c9aeb6;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.ship-cell {
+  width: 100%;
+  min-height: 76px;
+  height: 76px;
+  padding: 7px 2px;
+  border: 1px solid rgba(0,0,0,.16);
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: filter .15s ease, transform .15s ease;
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+.ship-cell:hover {
   filter: brightness(1.12);
+  transform: translateY(-2px);
+  z-index: 2;
 }
 
-.cell-select option {
-  color: #111;
-  background: white;
+.ship-cell:focus-visible {
+  outline: 3px solid #e8b7c4;
+  outline-offset: 2px;
 }
 
-.ship-korean {
-  display: block;
-  font-size: 16px;
-  font-weight: 800;
-  margin-bottom: 5px;
+.ship-ko {
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.15;
 }
 
-.ship-roman {
-  display: block;
+.ship-en {
   font-size: 9px;
-  font-weight: 500;
-  opacity: .85;
-  letter-spacing: .2px;
+  font-weight: 600;
+  letter-spacing: .15px;
+  line-height: 1.2;
 }
 
-.self-cell .ship-roman {
-  font-size: 9px;
+.self-cell .ship-en {
+  font-size: 8px;
+  letter-spacing: .3px;
+  text-transform: uppercase;
 }
 
 .legend {
-  margin-top: 23px;
-  padding: 18px;
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-.legend-title {
-  font-size: 13px;
-  font-weight: 700;
-  text-align: center;
-  margin-bottom: 15px;
-  letter-spacing: 1px;
-}
-
-.legend-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(130px, 1fr));
-  gap: 13px;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8px;
+  margin: 25px 0 5px;
 }
 
 .legend-item {
+  min-width: 0;
+  padding: 11px 6px;
+  background: #171418;
+  border: 1px solid #352a30;
+  border-radius: 6px;
+  text-align: center;
+}
+
+.legend-color {
+  display: block;
+  width: 25px;
+  height: 25px;
+  margin: 0 auto 8px;
+  padding: 0;
+  border: 2px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+}
+
+.legend-name {
+  display: block;
+  color: #f0e8eb;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.legend-ko {
+  display: block;
+  color: #bcaeb4;
+  font-size: 10px;
+  line-height: 1.5;
+}
+
+.legend-hint {
+  display: block;
+  margin-top: 5px;
+  color: #766c71;
+  font-size: 8px;
+}
+
+.legend-footer {
+  margin-top: 12px;
+  color: #857b80;
+  text-align: center;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+}
+
+.toolbar {
   display: flex;
   align-items: center;
-  gap: 9px;
-  min-width: 0;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 22px auto 0;
 }
 
-.swatch {
-  width: 23px;
-  height: 23px;
-  border: 1px solid rgba(255,255,255,.35);
+.toolbar button {
+  padding: 10px 19px;
+  color: #eee5e8;
+  background: #21171c;
+  border: 1px solid #58303c;
   border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.legend-copy {
-  flex: 1;
-  min-width: 0;
-}
-
-.legend-copy strong {
-  display: block;
-  font-size: 12px;
-}
-
-.legend-copy small {
-  display: block;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.4;
-  margin-top: 2px;
-}
-
-.color-picker {
-  width: 27px;
-  height: 27px;
-  padding: 0;
-  border: 1px solid #777;
-  background: transparent;
-  border-radius: 4px;
-  cursor: pointer;
-  flex-shrink: 0;
-}
-
-.color-picker::-webkit-color-swatch-wrapper {
-  padding: 2px;
-}
-
-.color-picker::-webkit-color-swatch {
-  border: 0;
-  border-radius: 2px;
-}
-
-.footer-note {
-  text-align: center;
-  color: var(--muted);
+  font-family: inherit;
   font-size: 11px;
-  margin-top: 20px;
-  line-height: 1.6;
+  letter-spacing: .7px;
+  cursor: pointer;
+  transition: background .2s, border-color .2s;
 }
 
-.footer-note strong {
-  color: white;
+.toolbar button:hover {
+  background: #3b1c27;
+  border-color: #a34a60;
 }
 
-@media (max-width: 700px) {
-  .page {
-    width: 96%;
-    padding-top: 20px;
-  }
+.toolbar button.primary {
+  background: #76142c;
+  border-color: #a72a47;
+}
 
-  .legend-grid {
-    grid-template-columns: repeat(2, minmax(120px, 1fr));
+.toolbar button.primary:hover {
+  background: #9b1c3a;
+}
+
+.toolbar button:disabled {
+  opacity: .35;
+  cursor: not-allowed;
+}
+
+.save-status {
+  width: 100%;
+  margin-top: 5px;
+  color: #857b80;
+  text-align: center;
+  font-size: 10px;
+}
+
+.credit {
+  margin-top: 28px;
+  color: #766d72;
+  text-align: center;
+  font-family: "Cormorant Garamond", serif;
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 850px) {
+  body {
+    padding: 15px 8px 35px;
   }
 
   .chart-shell {
-    padding: 9px;
+    padding: 18px 10px;
   }
 
-  .toolbar {
-    gap: 6px;
+  .branding {
+    gap: 17px;
   }
 
-  .action {
-    padding: 9px 11px;
-    font-size: 11px;
+  .branding img {
+    width: 105px;
+  }
+
+  .branding img.evan-logo {
+    width: 95px;
+  }
+
+  .branding img.enhypen-logo {
+    width: 115px;
+  }
+
+  .legend {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 
-@media (max-width: 390px) {
-  .legend-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 480px) {
+  .legend {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .toolbar {
+    gap: 7px;
+  }
+
+  .toolbar button {
+    padding: 9px 12px;
+    font-size: 10px;
+  }
+}
+
+@media print {
+  body {
+    background: #09090b;
+  }
+
+  .toolbar {
+    display: none;
   }
 }
 </style>
 </head>
 
 <body>
-<div class="page">
+<main class="page">
 
-<header>
-  <div class="brand-line">
-    <img
-      src="https://kprofiles.com/wp-content/uploads/2020/11/EVAN-logo.jpg"
-      alt="EVAN logo"
-      onerror="this.style.display='none'"
-    >
-    <div class="brand-name">EVAN <span>×</span> ENHYPEN</div>
-  </div>
-  <div class="subtitle">A directional ship preference chart</div>
-  <h1>SHIP CHART</h1>
-  <p class="intro">
-    Choose a preference for each pairing. Each direction is separate,
-    so the row-to-column pairing and column-to-row pairing can have
-    different preferences.
-  </p>
-</header>
+  <section class="chart-shell" id="chart-capture">
 
-<div class="toolbar">
-  <button class="action" id="undoBtn" onclick="undo()" disabled>↶ Undo</button>
-  <button class="action" id="redoBtn" onclick="redo()" disabled>↷ Redo</button>
-  <button class="action" onclick="resetChart()">Reset chart</button>
-  <button class="action" onclick="exportJSON()">Export JSON</button>
-  <button class="action" onclick="document.getElementById('importFile').click()">Import JSON</button>
-  <button class="action primary" onclick="downloadPNG()">Download PNG</button>
-  <input type="file" id="importFile" accept=".json,application/json" hidden>
-</div>
+    <header>
+      <div class="branding">
+        <img
+          class="evan-logo"
+          src="https://kprofiles.com/wp-content/uploads/2020/11/EVAN-logo.jpg"
+          alt="EVAN logo"
+          crossorigin="anonymous"
+        >
 
-<div class="status" id="status">Your chart is saved automatically in this browser.</div>
+        <span class="brand-divider"></span>
 
-<main id="chartCapture">
-  <section class="chart-shell">
-    <div class="chart-heading">
-      <h2>EVAN × ENHYPEN</h2>
-      <p>PAIRING PREFERENCES</p>
-    </div>
+        <img
+          class="enhypen-logo"
+          src="https://preview.redd.it/new-branding-v0-emdc3aqhet9h1.jpg?auto=webp&crop=smart&s=168347405b21792687dd376f0be803a618ac9994&width=640"
+          alt="ENHYPEN updated branding"
+          crossorigin="anonymous"
+        >
+      </div>
 
-    <div class="table-scroll">
-      <table id="shipTable">
-        <thead id="tableHead"></thead>
-        <tbody id="tableBody"></tbody>
+      <h1>EVAN × ENHYPEN</h1>
+      <p class="subtitle">Directional Ship Preference Chart</p>
+
+      <p class="instructions">
+        Select your preferences for each pairing by clicking its cell.
+        <br>
+        <strong>ROWS = BOTTOM</strong>
+        &nbsp; / &nbsp;
+        <strong>COLUMNS = TOP</strong>
+        <br>
+        Click to cycle forward through the categories. Right-click to cycle backwards.
+      </p>
+    </header>
+
+    <div class="table-wrap">
+      <table id="ship-table" aria-label="EVAN and ENHYPEN directional ship preference chart">
+        <thead id="table-head"></thead>
+        <tbody id="table-body"></tbody>
       </table>
     </div>
 
-    <section class="legend">
-      <div class="legend-title">PREFERENCE GUIDE</div>
-      <div class="legend-grid" id="legendGrid"></div>
-    </section>
+    <section class="legend" id="legend"></section>
 
-    <div class="footer-note">
-      <strong>EVAN × ENHYPEN</strong><br>
-      A fan-made preference chart. Each cell represents one direction.
-    </div>
+    <p class="legend-footer">
+      EVAN × ENHYPEN · PERSONAL SHIP PREFERENCES
+    </p>
+
   </section>
+
+  <nav class="toolbar" aria-label="Chart controls">
+    <button id="undo-btn" type="button">↶ UNDO</button>
+    <button id="redo-btn" type="button">REDO ↷</button>
+    <button id="reset-btn" type="button">RESET CHART</button>
+    <button id="png-btn" class="primary" type="button">DOWNLOAD PNG</button>
+  </nav>
+
+  <p class="save-status" id="save-status">Your chart saves automatically in this browser.</p>
+
+  <p class="credit">made with love ♡</p>
+
 </main>
 
-</div>
-
 <script>
+/* =====================================================
+   MEMBERS — ORDERED BY BIRTHDATE, OLDEST TO YOUNGEST
+===================================================== */
+
 const members = [
-  { name: "Heeseung", korean: "희승" },
-  { name: "Jay", korean: "제이" },
-  { name: "Jake", korean: "제이크" },
-  { name: "Sunghoon", korean: "성훈" },
-  { name: "Sunoo", korean: "선우" },
-  { name: "Jungwon", korean: "정원" },
-  { name: "Ni-ki", korean: "니키" }
+  { name: "Heeseung", ko: "희승" },
+  { name: "Jay",      ko: "제이" },
+  { name: "Jake",     ko: "제이크" },
+  { name: "Sunghoon", ko: "성훈" },
+  { name: "Sunoo",    ko: "선우" },
+  { name: "Jungwon",  ko: "정원" },
+  { name: "Ni-ki",    ko: "니키" }
 ];
 
-// Exact directional ship names supplied for this chart.
-// An empty Korean name is retained for the unprovided Ni-ki self-pairing.
-const ships = [
-  [
-    ["씅씅", "SseungSseung"],
-    ["씅젱", "SseungJeng"],
-    ["씅젴", "SseungJek"],
-    ["씅성", "SseungSeong"],
-    ["씅선", "SseungSeon"],
-    ["씅양", "SseungYang"],
-    ["씅닠", "SseungNik"]
-  ],
-  [
-    ["젱승", "JengSeung"],
-    ["젱젱", "JengJeng"],
-    ["젱젴", "JengJek"],
-    ["젱성", "JengSeong"],
-    ["젱선", "JengSeon"],
-    ["젱양", "JengYang"],
-    ["젱닠", "JengNik"]
-  ],
-  [
-    ["젴승", "JekSeung"],
-    ["젴젱", "JekJeng"],
-    ["젴젴", "JekJek"],
-    ["젴성", "JekSeong"],
-    ["젴선", "JekSeon"],
-    ["젴양", "JekYang"],
-    ["젴닠", "JekNik"]
-  ],
-  [
-    ["훈승", "HunSeung"],
-    ["성젱", "SeongJeng"],
-    ["성젴", "SeongJek"],
-    ["훈훈", "HunHun"],
-    ["훈선", "HunSeon"],
-    ["성양", "SeongYang"],
-    ["성닠", "SeongNik"]
-  ],
-  [
-    ["썬승", "SsunSeung"],
-    ["선젱", "SeonJeng"],
-    ["선젴", "SeonJek"],
-    ["선훈", "SeonHun"],
-    ["썬썬", "SsunSsun"],
-    ["썬양", "SsunYang"],
-    ["선닠", "SeonNik"]
-  ],
-  [
-    ["양씅", "YangSseung"],
-    ["양젱", "YangJeng"],
-    ["양젴", "YangJek"],
-    ["양훈", "YangHun"],
-    ["양썬", "YangSsun"],
-    ["양양", "YangYang"],
-    ["양닠", "YangNik"]
-  ],
-  [
-    ["닠승", "NikSeung"],
-    ["닠젱", "NikJeng"],
-    ["닠젴", "NikJek"],
-    ["닠성", "NikSeong"],
-    ["닠선", "NikSeon"],
-    ["닠양", "NikYang"],
-    ["", "Selfcest"]
-  ]
+/* =====================================================
+   KOREAN SHIP NAMES
+   Rows = BOTTOM / Columns = TOP
+===================================================== */
+
+const koreanNames = [
+  ["씅씅", "씅젱", "씅젴", "씅성", "씅선", "씅양", "씅닠"],
+  ["젱승", "젱젱", "젱젴", "젱성", "젱선", "젱양", "젱닠"],
+  ["젴승", "젴젱", "젴젴", "젴성", "젴선", "젴양", "젴닠"],
+  ["훈승", "성젱", "성젴", "훈훈", "훈선", "성양", "성닠"],
+  ["썬승", "선젱", "선젴", "선훈", "썬썬", "썬양", "선닠"],
+  ["양씅", "양젱", "양젴", "양훈", "양썬", "양양", "양닠"],
+  ["닠승", "닠젱", "닠젴", "닠성", "닠선", "닠양", "닠닠"]
 ];
+
+/* =====================================================
+   ROMANIZATION
+   Custom fandom-style spellings:
+   Sun, Hoon, Sung, Sseung, Jeng, Jek, Nik
+===================================================== */
+
+const romanParts = {
+  "씅": "Sseung",
+  "승": "Seung",
+  "젱": "Jeng",
+  "젴": "Jek",
+  "성": "Sung",
+  "훈": "Hoon",
+  "선": "Sun",
+  "썬": "Ssun",
+  "양": "Yang",
+  "닠": "Nik"
+};
+
+function romanize(korean) {
+  return Array.from(korean)
+    .map(part => romanParts[part] || part)
+    .join("");
+}
+
+/* =====================================================
+   PREFERENCE CATEGORIES AND DEFAULT COLOURS
+===================================================== */
 
 const categories = [
-  {
-    id: "otp",
-    korean: "OTP",
-    english: "Absolute favourite",
-    color: "#d7263d",
-    text: "#ffffff"
-  },
-  {
-    id: "love",
-    korean: "좋아함",
-    english: "A pairing I really love",
-    color: "#b9a0e5",
-    text: "#21172f"
-  },
-  {
-    id: "like",
-    korean: "괜찮음",
-    english: "A pairing I enjoy",
-    color: "#f2a23a",
-    text: "#2a1a08"
-  },
-  {
-    id: "curious",
-    korean: "흥미 있음",
-    english: "Curious / open to exploring",
-    color: "#80c9e8",
-    text: "#10232d"
-  },
-  {
-    id: "neutral",
-    korean: "무관심",
-    english: "Neutral / no particular interest",
-    color: "#ffffff",
-    text: "#222222"
-  },
-  {
-    id: "dislike",
-    korean: "별로",
-    english: "Not particularly interested",
-    color: "#859c61",
-    text: "#17200e"
-  },
-  {
-    id: "notp",
-    korean: "지뢰",
-    english: "Strongly dislike / avoid",
-    color: "#171717",
-    text: "#ffffff"
-  }
+  { id: "otp",      en: "OTP",      ko: "OTP",       color: "#98142f" },
+  { id: "love",     en: "Love",     ko: "좋아함",     color: "#b99bd7" },
+  { id: "like",     en: "Like",     ko: "괜찮음",     color: "#d58b36" },
+  { id: "curious",  en: "Curious",  ko: "흥미 있음",  color: "#79bfe4" },
+  { id: "neutral",  en: "Neutral",  ko: "무관심",     color: "#f4f1ef" },
+  { id: "dislike",  en: "Dislike",  ko: "별로",       color: "#526d4a" },
+  { id: "notp",     en: "NOTP",     ko: "지뢰",       color: "#080808" }
 ];
 
 const STORAGE_KEY = "evan-enhypen-ship-chart-v1";
-const COLOR_KEY = "evan-enhypen-ship-chart-colors-v1";
 
-let chart = Array.from({ length: 7 }, () => Array(7).fill("neutral"));
-let colors = {};
-let undoStack = [];
-let redoStack = [];
+/* =====================================================
+   STATE
+===================================================== */
 
-categories.forEach(category => {
-  colors[category.id] = category.color;
-});
+let selections = Array(7).fill(null).map(() => Array(7).fill(4));
+let palette = categories.map(category => category.color);
 
-function setStatus(message) {
-  document.getElementById("status").textContent = message;
-}
+let history = [];
+let historyIndex = -1;
+const MAX_HISTORY = 80;
 
-function saveLocal() {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(chart));
-  localStorage.setItem(COLOR_KEY, JSON.stringify(colors));
-  setStatus("Saved automatically in this browser.");
-}
+/* =====================================================
+   HELPERS
+===================================================== */
 
-function updateHistoryButtons() {
-  document.getElementById("undoBtn").disabled = undoStack.length === 0;
-  document.getElementById("redoBtn").disabled = redoStack.length === 0;
+function cloneState() {
+  return {
+    selections: selections.map(row => [...row]),
+    palette: [...palette]
+  };
 }
 
 function saveHistory() {
-  undoStack.push({
-    chart: JSON.parse(JSON.stringify(chart)),
-    colors: JSON.parse(JSON.stringify(colors))
-  });
+  const state = cloneState();
 
-  if (undoStack.length > 80) undoStack.shift();
-  redoStack = [];
-  updateHistoryButtons();
+  history = history.slice(0, historyIndex + 1);
+  history.push(state);
+
+  if (history.length > MAX_HISTORY) {
+    history.shift();
+  }
+
+  historyIndex = history.length - 1;
+  updateUndoRedo();
 }
 
-function undo() {
-  if (!undoStack.length) return;
+function applyState(state) {
+  selections = state.selections.map(row => [...row]);
+  palette = [...state.palette];
 
-  redoStack.push({
-    chart: JSON.parse(JSON.stringify(chart)),
-    colors: JSON.parse(JSON.stringify(colors))
-  });
-
-  const previous = undoStack.pop();
-  chart = previous.chart;
-  colors = previous.colors;
-
-  render();
-  saveLocal();
-  updateHistoryButtons();
-}
-
-function redo() {
-  if (!redoStack.length) return;
-
-  undoStack.push({
-    chart: JSON.parse(JSON.stringify(chart)),
-    colors: JSON.parse(JSON.stringify(colors))
-  });
-
-  const next = redoStack.pop();
-  chart = next.chart;
-  colors = next.colors;
-
-  render();
-  saveLocal();
-  updateHistoryButtons();
-}
-
-function getCategory(id) {
-  return categories.find(category => category.id === id);
-}
-
-function renderHead() {
-  const head = document.getElementById("tableHead");
-  head.innerHTML = "";
-
-  const row = document.createElement("tr");
-
-  const corner = document.createElement("th");
-  corner.className = "corner";
-  corner.textContent = "ROW ↓ / COLUMN →";
-  row.appendChild(corner);
-
-  members.forEach(member => {
-    const th = document.createElement("th");
-    th.innerHTML = `${member.name}<span class="member-korean">${member.korean}</span>`;
-    row.appendChild(th);
-  });
-
-  head.appendChild(row);
-}
-
-function renderBody() {
-  const body = document.getElementById("tableBody");
-  body.innerHTML = "";
-
-  members.forEach((member, rowIndex) => {
-    const row = document.createElement("tr");
-
-    const heading = document.createElement("th");
-    heading.className = "row-name";
-    heading.innerHTML = `${member.name}<span class="member-korean">${member.korean}</span>`;
-    row.appendChild(heading);
-
-    members.forEach((columnMember, columnIndex) => {
-      const td = document.createElement("td");
-      const select = document.createElement("select");
-      const current = chart[rowIndex][columnIndex];
-      const category = getCategory(current);
-      const ship = ships[rowIndex][columnIndex];
-      const isSelf = rowIndex === columnIndex;
-
-      select.className = "cell-select" + (isSelf ? " self-cell" : "");
-      select.style.backgroundColor = colors[current];
-      select.style.color = category.text;
-      select.setAttribute(
-        "aria-label",
-        `${member.name} × ${columnMember.name}: ${category.korean}`
-      );
-
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = "—";
-      select.appendChild(placeholder);
-
-      categories.forEach(item => {
-        const option = document.createElement("option");
-        option.value = item.id;
-        option.textContent = `${item.korean} — ${item.english}`;
-        select.appendChild(option);
-      });
-
-      select.value = current;
-
-      const display = document.createElement("div");
-      display.style.pointerEvents = "none";
-      display.style.position = "absolute";
-      display.style.inset = "0";
-      display.style.display = "flex";
-      display.style.flexDirection = "column";
-      display.style.justifyContent = "center";
-      display.style.alignItems = "center";
-      display.style.padding = "4px";
-
-      const hangul = document.createElement("span");
-      hangul.className = "ship-korean";
-      hangul.textContent = ship[0] || "";
-
-      const roman = document.createElement("span");
-      roman.className = "ship-roman";
-      roman.textContent = ship[1];
-
-      display.appendChild(hangul);
-      display.appendChild(roman);
-
-      td.style.position = "relative";
-      select.style.position = "absolute";
-      select.style.inset = "0";
-      select.style.opacity = "0";
-      select.style.zIndex = "2";
-
-      select.addEventListener("change", () => {
-        if (!select.value) return;
-        saveHistory();
-        chart[rowIndex][columnIndex] = select.value;
-        renderBody();
-        saveLocal();
-      });
-
-      td.appendChild(select);
-      td.appendChild(display);
-      row.appendChild(td);
-    });
-
-    body.appendChild(row);
-  });
-}
-
-function renderLegend() {
-  const grid = document.getElementById("legendGrid");
-  grid.innerHTML = "";
-
-  categories.forEach(category => {
-    const item = document.createElement("div");
-    item.className = "legend-item";
-
-    const swatch = document.createElement("div");
-    swatch.className = "swatch";
-    swatch.style.backgroundColor = colors[category.id];
-
-    const copy = document.createElement("div");
-    copy.className = "legend-copy";
-
-    const strong = document.createElement("strong");
-    strong.textContent = category.korean;
-
-    const small = document.createElement("small");
-    small.textContent = category.english;
-
-    copy.appendChild(strong);
-    copy.appendChild(small);
-
-    const picker = document.createElement("input");
-    picker.type = "color";
-    picker.className = "color-picker";
-    picker.value = colors[category.id];
-    picker.title = `Customize ${category.korean} colour`;
-    picker.setAttribute("aria-label", `Customize ${category.korean} colour`);
-
-    picker.addEventListener("input", event => {
-      saveHistory();
-      colors[category.id] = event.target.value;
-      swatch.style.backgroundColor = colors[category.id];
-      renderBody();
-      saveLocal();
-    });
-
-    item.appendChild(swatch);
-    item.appendChild(copy);
-    item.appendChild(picker);
-    grid.appendChild(item);
-  });
-}
-
-function render() {
-  renderHead();
-  renderBody();
+  renderChart();
   renderLegend();
-  updateHistoryButtons();
+  saveToLocalStorage();
+  updateUndoRedo();
 }
 
-function resetChart() {
-  if (!confirm("Reset all pairing preferences and custom colours?")) return;
-
-  saveHistory();
-  chart = Array.from({ length: 7 }, () => Array(7).fill("neutral"));
-
-  categories.forEach(category => {
-    colors[category.id] = category.color;
-  });
-
-  render();
-  saveLocal();
-  setStatus("Chart and colours have been reset.");
+function updateUndoRedo() {
+  document.getElementById("undo-btn").disabled = historyIndex <= 0;
+  document.getElementById("redo-btn").disabled = historyIndex >= history.length - 1;
 }
 
-function exportJSON() {
-  const data = {
-    title: "EVAN × ENHYPEN Ship Chart",
-    version: 1,
-    chart,
-    colors
-  };
-
-  const blob = new Blob([JSON.stringify(data, null, 2)], {
-    type: "application/json"
-  });
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = "evan-enhypen-ship-chart.json";
-  link.click();
-  URL.revokeObjectURL(url);
-  setStatus("JSON backup downloaded.");
-}
-
-document.getElementById("importFile").addEventListener("change", event => {
-  const file = event.target.files[0];
-  if (!file) return;
-
-  const reader = new FileReader();
-
-  reader.onload = () => {
-    try {
-      const data = JSON.parse(reader.result);
-
-      if (
-        !Array.isArray(data.chart) ||
-        data.chart.length !== 7 ||
-        !data.chart.every(row => Array.isArray(row) && row.length === 7)
-      ) {
-        throw new Error("Invalid chart format.");
-      }
-
-      saveHistory();
-      chart = data.chart.map(row =>
-        row.map(value =>
-          categories.some(category => category.id === value)
-            ? value
-            : "neutral"
-        )
-      );
-
-      if (data.colors && typeof data.colors === "object") {
-        categories.forEach(category => {
-          const value = data.colors[category.id];
-          if (/^#[0-9a-fA-F]{6}$/.test(value || "")) {
-            colors[category.id] = value;
-          }
-        });
-      }
-
-      render();
-      saveLocal();
-      setStatus("Your chart backup was imported successfully.");
-    } catch (error) {
-      alert("That file could not be imported. Please choose a valid chart JSON backup.");
-    }
-
-    event.target.value = "";
-  };
-
-  reader.readAsText(file);
-});
-
-async function downloadPNG() {
-  const target = document.getElementById("chartCapture");
-
-  if (typeof html2canvas === "undefined") {
-    alert("The PNG export library did not load. Please check your internet connection and try again.");
-    return;
-  }
-
-  setStatus("Preparing your PNG...");
-
+function saveToLocalStorage() {
   try {
-    const canvas = await html2canvas(target, {
-      backgroundColor: "#111113",
-      scale: 2,
-      useCORS: true
-    });
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      selections,
+      palette
+    }));
 
-    const link = document.createElement("a");
-    link.download = "evan-enhypen-ship-chart.png";
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-
-    setStatus("PNG downloaded.");
+    document.getElementById("save-status").textContent =
+      "✓ Saved automatically in this browser";
   } catch (error) {
-    setStatus("PNG export failed. Please try again.");
-    alert("The chart could not be exported. You can still use the JSON backup.");
+    document.getElementById("save-status").textContent =
+      "Automatic saving is unavailable in this browser.";
   }
 }
 
-function loadLocal() {
+function loadFromLocalStorage() {
   try {
-    const savedChart = localStorage.getItem(STORAGE_KEY);
-    const savedColors = localStorage.getItem(COLOR_KEY);
+    const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-    if (savedChart) {
-      const parsed = JSON.parse(savedChart);
+    if (saved && Array.isArray(saved.selections)) {
       if (
-        Array.isArray(parsed) &&
-        parsed.length === 7 &&
-        parsed.every(row => Array.isArray(row) && row.length === 7)
+        saved.selections.length === 7 &&
+        saved.selections.every(row => Array.isArray(row) && row.length === 7)
       ) {
-        chart = parsed.map(row =>
+        selections = saved.selections.map(row =>
           row.map(value =>
-            categories.some(category => category.id === value)
-              ? value
-              : "neutral"
+            Number.isInteger(value) && value >= 0 && value <= 6 ? value : 4
           )
         );
       }
     }
 
-    if (savedColors) {
-      const parsed = JSON.parse(savedColors);
-      categories.forEach(category => {
-        if (/^#[0-9a-fA-F]{6}$/.test(parsed[category.id] || "")) {
-          colors[category.id] = parsed[category.id];
-        }
-      });
+    if (
+      saved &&
+      Array.isArray(saved.palette) &&
+      saved.palette.length === 7
+    ) {
+      palette = saved.palette.map((color, index) =>
+        /^#[0-9a-f]{6}$/i.test(color) ? color : categories[index].color
+      );
     }
   } catch (error) {
-    console.warn("Saved chart data could not be loaded.", error);
+    console.warn("Could not load saved chart.", error);
   }
 }
 
-loadLocal();
-render();
+/* =====================================================
+   TEXT CONTRAST
+===================================================== */
+
+function readableText(hex) {
+  const clean = hex.replace("#", "");
+  const r = parseInt(clean.substring(0, 2), 16);
+  const g = parseInt(clean.substring(2, 4), 16);
+  const b = parseInt(clean.substring(4, 6), 16);
+
+  const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+  return brightness > 155 ? "#171316" : "#ffffff";
+}
+
+/* =====================================================
+   BUILD TABLE
+===================================================== */
+
+function renderChart() {
+  const head = document.getElementById("table-head");
+  const body = document.getElementById("table-body");
+
+  head.innerHTML = "";
+  body.innerHTML = "";
+
+  const headerRow = document.createElement("tr");
+
+  const corner = document.createElement("th");
+  corner.className = "axis-corner";
+  corner.innerHTML = "<span>BOTTOM ↓<br>TOP →</span>";
+  headerRow.appendChild(corner);
+
+  members.forEach(member => {
+    const th = document.createElement("th");
+    th.className = "member-head";
+    th.innerHTML = `${member.name}<span class="member-ko">${member.ko}</span>`;
+    headerRow.appendChild(th);
+  });
+
+  head.appendChild(headerRow);
+
+  members.forEach((bottomMember, rowIndex) => {
+    const tr = document.createElement("tr");
+
+    const rowHeader = document.createElement("th");
+    rowHeader.className = "row-head";
+    rowHeader.innerHTML =
+      `${bottomMember.name}<span class="member-ko">${bottomMember.ko}</span>`;
+    tr.appendChild(rowHeader);
+
+    members.forEach((topMember, colIndex) => {
+      const td = document.createElement("td");
+
+      const categoryIndex = selections[rowIndex][colIndex];
+      const category = categories[categoryIndex];
+
+      const korean = koreanNames[rowIndex][colIndex];
+      const isSelf = rowIndex === colIndex;
+      const english = isSelf ? "Selfcest" : romanize(korean);
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "ship-cell" + (isSelf ? " self-cell" : "");
+      button.style.backgroundColor = palette[categoryIndex];
+      button.style.color = readableText(palette[categoryIndex]);
+
+      button.setAttribute(
+        "aria-label",
+        `${bottomMember.name} bottom, ${topMember.name} top: ${category.en}. ${korean}, ${english}`
+      );
+
+      button.title =
+        `${bottomMember.name} (bottom) × ${topMember.name} (top)\n` +
+        `${korean} — ${english}\n` +
+        `Current preference: ${category.en} / ${category.ko}\n` +
+        `Click to change`;
+
+      button.innerHTML = `
+        <span class="ship-ko">${korean}</span>
+        <span class="ship-en">${english}</span>
+      `;
+
+      button.addEventListener("click", () => {
+        changeCell(rowIndex, colIndex, 1);
+      });
+
+      button.addEventListener("contextmenu", event => {
+        event.preventDefault();
+        changeCell(rowIndex, colIndex, -1);
+      });
+
+      td.appendChild(button);
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
+  });
+}
+
+/* =====================================================
+   CHANGE INDIVIDUAL CELLS
+===================================================== */
+
+function changeCell(row, col, direction) {
+  saveHistory();
+
+  const current = selections[row][col];
+  selections[row][col] =
+    (current + direction + categories.length) % categories.length;
+
+  renderChart();
+  saveToLocalStorage();
+}
+
+/* =====================================================
+   LEGEND AND COLOUR CUSTOMIZATION
+===================================================== */
+
+function renderLegend() {
+  const legend = document.getElementById("legend");
+  legend.innerHTML = "";
+
+  categories.forEach((category, index) => {
+    const item = document.createElement("div");
+    item.className = "legend-item";
+
+    const colorInput = document.createElement("input");
+    colorInput.type = "color";
+    colorInput.className = "legend-color";
+    colorInput.value = palette[index];
+    colorInput.title = `Change ${category.en} colour`;
+
+    colorInput.addEventListener("input", event => {
+      palette[index] = event.target.value;
+      updateCellColours();
+      saveToLocalStorage();
+    });
+
+    colorInput.addEventListener("change", () => {
+      saveHistory();
+      saveToLocalStorage();
+    });
+
+    const english = document.createElement("span");
+    english.className = "legend-name";
+    english.textContent = category.en;
+
+    const korean = document.createElement("span");
+    korean.className = "legend-ko";
+    korean.textContent = category.ko;
+
+    const hint = document.createElement("span");
+    hint.className = "legend-hint";
+    hint.textContent = "Change colour";
+
+    item.append(colorInput, english, korean, hint);
+    legend.appendChild(item);
+  });
+}
+
+function updateCellColours() {
+  document.querySelectorAll(".ship-cell").forEach((button, index) => {
+    const row = Math.floor(index / 7);
+    const col = index % 7;
+    const categoryIndex = selections[row][col];
+
+    button.style.backgroundColor = palette[categoryIndex];
+    button.style.color = readableText(palette[categoryIndex]);
+  });
+}
+
+/* =====================================================
+   UNDO / REDO
+===================================================== */
+
+document.getElementById("undo-btn").addEventListener("click", () => {
+  if (historyIndex <= 0) return;
+
+  historyIndex--;
+  applyState(history[historyIndex]);
+});
+
+document.getElementById("redo-btn").addEventListener("click", () => {
+  if (historyIndex >= history.length - 1) return;
+
+  historyIndex++;
+  applyState(history[historyIndex]);
+});
+
+/* =====================================================
+   RESET
+===================================================== */
+
+document.getElementById("reset-btn").addEventListener("click", () => {
+  const confirmed = confirm(
+    "Reset all ship preferences to Neutral?\n\nYour customized category colours will be kept."
+  );
+
+  if (!confirmed) return;
+
+  saveHistory();
+
+  selections = Array(7).fill(null).map(() => Array(7).fill(4));
+
+  renderChart();
+  saveToLocalStorage();
+});
+
+/* =====================================================
+   PNG DOWNLOAD
+===================================================== */
+
+document.getElementById("png-btn").addEventListener("click", async () => {
+  const button = document.getElementById("png-btn");
+  const originalText = button.textContent;
+
+  if (typeof html2canvas === "undefined") {
+    alert("The PNG library did not load. Please refresh the page and try again.");
+    return;
+  }
+
+  button.disabled = true;
+  button.textContent = "CREATING PNG...";
+
+  try {
+    const capture = document.getElementById("chart-capture");
+
+    const canvas = await html2canvas(capture, {
+      backgroundColor: "#09090b",
+      scale: 2,
+      useCORS: true,
+      allowTaint: false,
+      logging: false
+    });
+
+    const link = document.createElement("a");
+    link.download = "EVAN-ENHYPEN-Ship-Chart.png";
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+
+  } catch (error) {
+    console.error("PNG export failed:", error);
+    alert(
+      "The PNG could not be created. One of the external logo images may be blocking image export. Try refreshing the page, or temporarily remove the logo images and try again."
+    );
+  } finally {
+    button.disabled = false;
+    button.textContent = originalText;
+  }
+});
+
+/* =====================================================
+   INITIALIZE
+===================================================== */
+
+loadFromLocalStorage();
+renderChart();
+renderLegend();
+saveHistory();
+saveToLocalStorage();
+
 </script>
 </body>
 </html>
+
